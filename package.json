@@ -1,6 +1,6 @@
 {
   "name": "dioc",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "license": "MIT",
   "description": "A 'too simple' and opinionated dependency injection library",
@@ -16,7 +16,9 @@
   ],
   "files": [
     "dist",
-    "index.d.ts"
+    "index.d.ts",
+    "vue.d.ts",
+    "testing.d.ts"
   ],
   "main": "./dist/counter.umd.cjs",
   "module": "./dist/counter.js",
