@@ -1,6 +1,5 @@
 import { Plugin, inject } from "vue"
-import { Container } from "./container"
-import { Service } from "./service"
+import { Container, ServiceClassInstance } from "./container"
 
 const VUE_CONTAINER_KEY = Symbol()
 
@@ -21,9 +20,7 @@ export const diocPlugin: Plugin = {
  *
  * @param service The class reference of the service to bind
  */
-export function useService<
-  T extends typeof Service<any> & { ID: string }
->(service: T): InstanceType<T> {
+export function useService<T extends ServiceClassInstance<T>>(service: T): InstanceType<T> {
   const container = inject(VUE_CONTAINER_KEY) as Container | undefined | null
 
   if (!container) {

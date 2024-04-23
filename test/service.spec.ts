@@ -3,6 +3,12 @@ import { Service, Container } from "../lib/main"
 
 class TestServiceA extends Service {
   public static ID = "TestServiceA"
+
+  public serviceInitCallCount = 0;
+
+  onServiceInit() {
+    this.serviceInitCallCount += 1;
+  }
 }
 
 class TestServiceB extends Service<"test"> {
@@ -17,14 +23,6 @@ class TestServiceB extends Service<"test"> {
 }
 
 describe("Service", () => {
-  describe("constructor", () => {
-    it("throws an error if the service is initialized without a container", () => {
-      expect(() => new TestServiceA()).toThrowError(
-        "Tried to initialize service with no container (ID: TestServiceA)"
-      )
-    })
-  })
-
   describe("bind", () => {
     it("correctly binds the dependency service using the container", () => {
       const container = new Container()
@@ -32,7 +30,18 @@ describe("Service", () => {
       const serviceA = container.bind(TestServiceA)
 
       const serviceB = container.bind(TestServiceB)
+
       expect(serviceB.serviceA).toBe(serviceA)
+    })
+  })
+
+  describe("onModuleInit", () => {
+    it("gets called when the service was initialized", () => {
+      const container = new Container()
+
+      const serviceA = container.bind(TestServiceA)
+
+      expect(serviceA.serviceInitCallCount).toEqual(1)
     })
   })
 

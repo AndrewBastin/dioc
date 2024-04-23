@@ -1,10 +1,11 @@
 import { Observable, Subject } from 'rxjs'
-import { Container, currentContainer } from './container'
+import { Container, ServiceClassInstance } from './container'
 
 /**
  * A Dioc service that can bound to a container and can bind dependency services.
  *
- * NOTE: Services cannot have a constructor that takes arguments.
+ * NOTE: Services have a constructor that take a single argument that is the container. This should always be maintained
+ * since that is expected for binding to containers.
  *
  * @template EventDef The type of events that can be emitted by the service. These will be accessible by event streams
  */
@@ -18,26 +19,31 @@ export abstract class Service<EventDef = {}> {
   /** The container the service is bound to */
   #container: Container
 
-  constructor() {
-    if (!currentContainer.value) {
-      throw new Error(
-        `Tried to initialize service with no container (ID: ${ (this.constructor as any).ID })`
-      )
-    }
+  constructor(container: Container) {
+    this.#container = container
+  }
 
-    this.#container = currentContainer.value
+  /**
+   * This function is called when a service is initialized, which is only
+   * once per container since services are singletons. By
+   * default this function does nothing and is expected to be overriden by
+   * services if they want to do like in place of a constructor.
+   *
+   * NOTE: The reason why this function exists is so that constructors for
+   * services need not be exposed and played around with. By norm, it is best
+   * to override this function than overriding the constructor and providing the
+   * container that way.
+   */
+  public onServiceInit() {
+    // NOOP. This function is expected to be overriden if something is needed to be done
   }
 
   /**
    * Binds a dependency service into this service.
    * @param service The class reference of the service to bind
    */
-  protected bind<T extends typeof Service<any> & { ID: string }>(service: T): InstanceType<T> {
-    if (!currentContainer.value) {
-      throw new Error('No currentContainer defined.')
-    }
-
-    return currentContainer.value.bind(service, this.constructor as typeof Service<any> & { ID: string })
+  protected bind<T extends ServiceClassInstance<any>>(service: T): InstanceType<T> {
+    return this.#container.bind(service, this.constructor as ServiceClassInstance<EventDef>)
   }
 
   /**
@@ -59,7 +65,6 @@ export abstract class Service<EventDef = {}> {
    * Returns the event stream of the service
    */
   public getEventStream(): Observable<EventDef> {
-
     return this.event$.asObservable()
   }
 }

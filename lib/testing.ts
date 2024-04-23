@@ -1,4 +1,4 @@
-import { Container, Service } from "./main";
+import { Container, ServiceClassInstance } from "./main";
 
 /**
  * A container that can be used for writing tests, contains additional methods
@@ -13,7 +13,7 @@ export class TestContainer extends Container {
    * @param mock
    */
   public bindMock<
-    T extends typeof Service<any> & { ID: string },
+    T extends ServiceClassInstance<any>,
     U extends Partial<InstanceType<T>>
   >(service: T, mock: U): U {
     if (this.boundMap.has(service.ID)) {
@@ -21,6 +21,7 @@ export class TestContainer extends Container {
     }
 
     this.boundMap.set(service.ID, mock as any)
+    mock.onServiceInit?.() // Call onServiceInit if that is defined to simulate similar behaviour
 
     this.event$.next({
       type: "SERVICE_BIND",

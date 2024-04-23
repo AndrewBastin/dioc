@@ -1,6 +1,6 @@
 import { it, expect, describe, vi } from "vitest"
 import { Service } from "../lib/service"
-import { Container, currentContainer, ContainerEvent } from "../lib/container"
+import { Container, ContainerEvent } from "../lib/container"
 
 class TestServiceA extends Service {
   public static ID = "TestServiceA"
@@ -38,15 +38,6 @@ describe("Container", () => {
 
       // @ts-expect-error getContainer is defined as a protected property, but we are leveraging it here to check
       expect(service.getContainer()).toBe(container)
-    })
-
-    it("after bind, the current container is set back to its previous value", () => {
-      const originalValue = currentContainer.value
-
-      const container = new Container()
-      container.bind(TestServiceA)
-
-      expect(currentContainer.value).toBe(originalValue)
     })
 
     it("dependent services are registered in the same container", () => {

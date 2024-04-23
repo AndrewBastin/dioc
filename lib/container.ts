@@ -2,11 +2,14 @@ import { Service } from "./service"
 import { Observable, Subject } from 'rxjs'
 
 /**
- * Stores the current container instance in the current operating context.
+ * A type that represents a class instance of a Service.
  *
- * NOTE: This should not be used outside of dioc library code
+ * For example, if you have a `TodoService` defined, this will refer to
+ * the JS 'class constructor' and not the instance of the class (represented
+ * by the type `TodoService`). This type is useful in situations where you want
+ * to have a reference to service type itself, and is mostly used by the `bind` functions
  */
-export let currentContainer: { value: Container | null } = { value: null } 
+export type ServiceClassInstance<T> = (new (c: Container) => Service<T>) & { ID: string }
 
 /**
  * The events emitted by the container
@@ -52,9 +55,7 @@ export class Container {
    * Returns whether a container has the given service bound
    * @param service The service to check for
    */
-  public hasBound<
-    T extends typeof Service<any> & { ID: string }
-  >(service: T): boolean {
+  public hasBound<T extends ServiceClassInstance<any>>(service: T): boolean {
     return this.boundMap.has(service.ID)
   }
 
@@ -74,14 +75,10 @@ export class Container {
    * @param service The class reference of a service to bind
    * @param bounder The class reference of the service that is binding the service (if bound directly to the container, this should be undefined)
    */
-  public bind<T extends typeof Service<any> & { ID: string }>(
+  public bind<T extends ServiceClassInstance<any>>(
     service: T,
-    bounder: ((typeof Service<T>) & { ID: string }) | undefined = undefined
+    bounder: ServiceClassInstance<any> | undefined = undefined
   ): InstanceType<T> {
-    // We need to store the current container in a variable so that we can restore it after the bind operation
-    const oldCurrentContainer = currentContainer.value;
-    currentContainer.value = this;
-
     // If the service is already bound, return the existing instance
     if (this.hasBound(service)) {
       this.event$.next({
@@ -106,7 +103,8 @@ export class Container {
     // Initialize the service and emit events
 
     // NOTE: We need to cast the service to any as TypeScript thinks that the service is abstract
-    const instance: Service<any> = new (service as any)()
+    const instance: Service<any> = new service(this) 
+    instance.onServiceInit()
 
     this.boundMap.set(service.ID, instance)
 
@@ -122,10 +120,6 @@ export class Container {
       boundeeID: service.ID,
       bounderID: bounder?.ID
     })
-
-
-    // Restore the current container
-    currentContainer.value = oldCurrentContainer;
 
     // We expect the return type to match the service definition
     return instance as InstanceType<T>
