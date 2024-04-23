@@ -40,10 +40,8 @@ export class TodoService extends Service<TodoServiceEvent> {
 
   public todos = []
 
-  // Service constructors cannot have arguments
-  constructor() {
-    super()
-
+  // Services cannot(*) have constructors, but init logic can be mentioned here
+  override onServiceInit() {
     this.todos = JSON.parse(this.persistence.read("todos") ?? "[]")
   }
 
