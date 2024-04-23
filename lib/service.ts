@@ -19,13 +19,13 @@ export abstract class Service<EventDef = {}> {
   #container: Container
 
   constructor() {
-    if (!currentContainer) {
+    if (!currentContainer.value) {
       throw new Error(
         `Tried to initialize service with no container (ID: ${ (this.constructor as any).ID })`
       )
     }
 
-    this.#container = currentContainer
+    this.#container = currentContainer.value
   }
 
   /**
@@ -33,11 +33,11 @@ export abstract class Service<EventDef = {}> {
    * @param service The class reference of the service to bind
    */
   protected bind<T extends typeof Service<any> & { ID: string }>(service: T): InstanceType<T> {
-    if (!currentContainer) {
+    if (!currentContainer.value) {
       throw new Error('No currentContainer defined.')
     }
 
-    return currentContainer.bind(service, this.constructor as typeof Service<any> & { ID: string })
+    return currentContainer.value.bind(service, this.constructor as typeof Service<any> & { ID: string })
   }
 
   /**

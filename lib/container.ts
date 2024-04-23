@@ -6,7 +6,7 @@ import { Observable, Subject } from 'rxjs'
  *
  * NOTE: This should not be used outside of dioc library code
  */
-export let currentContainer: Container | null = null
+export let currentContainer: { value: Container | null } = { value: null } 
 
 /**
  * The events emitted by the container
@@ -79,8 +79,8 @@ export class Container {
     bounder: ((typeof Service<T>) & { ID: string }) | undefined = undefined
   ): InstanceType<T> {
     // We need to store the current container in a variable so that we can restore it after the bind operation
-    const oldCurrentContainer = currentContainer;
-    currentContainer = this;
+    const oldCurrentContainer = currentContainer.value;
+    currentContainer.value = this;
 
     // If the service is already bound, return the existing instance
     if (this.hasBound(service)) {
@@ -125,7 +125,7 @@ export class Container {
 
 
     // Restore the current container
-    currentContainer = oldCurrentContainer;
+    currentContainer.value = oldCurrentContainer;
 
     // We expect the return type to match the service definition
     return instance as InstanceType<T>
