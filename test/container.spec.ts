@@ -90,7 +90,7 @@ describe("Container", () => {
         }
       })
 
-      const instance = container.bind(TestServiceA)
+      container.bind(TestServiceA)
 
       expect(serviceFunc).toHaveBeenCalledOnce()
       expect(serviceFunc).toHaveBeenCalledWith(<ContainerEvent>{
