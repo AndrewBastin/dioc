@@ -1,7 +1,7 @@
 import { Plugin, inject } from "vue"
 import { Container, ServiceClassInstance } from "./container"
 
-const VUE_CONTAINER_KEY = Symbol()
+const VUE_CONTAINER_KEY = "__dioc:vue"
 
 // TODO: Some Vue version issue with plugin generics is breaking type checking
 /**
